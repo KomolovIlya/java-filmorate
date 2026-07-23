@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
@@ -7,15 +11,28 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserControllerTest {
     private UserController userController;
+    private Validator validator;
 
     @BeforeEach
     void setUp() {
         userController = new UserController();
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            validator = factory.getValidator();
+        }
+    }
+
+    private void validateAndCreate(User user) {
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        if (!violations.isEmpty()) {
+            throw new ValidationException("Ошибка валидации аннотаций");
+        }
+        userController.create(user);
     }
 
     @Test
@@ -26,6 +43,9 @@ class UserControllerTest {
         user.setName("Иван");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertTrue(violations.isEmpty());
+
         User created = userController.create(user);
         assertEquals(1, created.getId());
     }
@@ -33,11 +53,11 @@ class UserControllerTest {
     @Test
     void shouldThrowExceptionWhenEmailIsInvalid() {
         User user = new User();
-        user.setEmail("testyandex.ru"); // без @
+        user.setEmail("testyandex.ru");
         user.setLogin("login");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        assertThrows(ValidationException.class, () -> userController.create(user));
+        assertThrows(ValidationException.class, () -> validateAndCreate(user));
     }
 
     @Test
@@ -47,7 +67,7 @@ class UserControllerTest {
         user.setLogin("lo gin");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        assertThrows(ValidationException.class, () -> userController.create(user));
+        assertThrows(ValidationException.class, () -> validateAndCreate(user));
     }
 
     @Test
@@ -68,6 +88,6 @@ class UserControllerTest {
         user.setLogin("login");
         user.setBirthday(LocalDate.now().plusDays(1));
 
-        assertThrows(ValidationException.class, () -> userController.create(user));
+        assertThrows(ValidationException.class, () -> validateAndCreate(user));
     }
 }
