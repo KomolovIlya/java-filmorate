@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -13,24 +13,17 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
-
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     public List<User> findAll() {
         return userStorage.findAll();
     }
 
     public User findById(Long id) {
-        User user = userStorage.findById(id);
-        if (user == null) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден.");
-        }
-        return user;
+        return userStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден."));
     }
 
     public User create(User user) {
@@ -66,7 +59,7 @@ public class UserService {
         User user = findById(userId);
 
         return user.getFriends().stream()
-                .map(userStorage::findById)
+                .map(this::findById)
                 .collect(Collectors.toList());
     }
 
@@ -79,7 +72,7 @@ public class UserService {
 
         return userFriends.stream()
                 .filter(otherFriends::contains)
-                .map(userStorage::findById)
+                .map(this::findById)
                 .collect(Collectors.toList());
     }
 
