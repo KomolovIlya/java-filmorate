@@ -41,8 +41,8 @@ public class UserService {
         User user = findById(userId);
         User friend = findById(friendId);
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        user.getFriends().put(friendId, false);
+        friend.getFriends().put(userId, false);
         log.info("Пользователи с id {} и id {} стали друзьями", userId, friendId);
     }
 
@@ -58,7 +58,7 @@ public class UserService {
     public List<User> getFriends(Long userId) {
         User user = findById(userId);
 
-        return user.getFriends().stream()
+        return user.getFriendsIds().stream()
                 .map(this::findById)
                 .collect(Collectors.toList());
     }
@@ -67,8 +67,8 @@ public class UserService {
         User user = findById(userId);
         User otherUser = findById(otherId);
 
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> otherFriends = otherUser.getFriends();
+        Set<Long> userFriends = user.getFriendsIds();
+        Set<Long> otherFriends = otherUser.getFriendsIds();
 
         return userFriends.stream()
                 .filter(otherFriends::contains)
