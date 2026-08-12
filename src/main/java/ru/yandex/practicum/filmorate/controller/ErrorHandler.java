@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,6 +39,13 @@ public class ErrorHandler {
     public ErrorResponse handleNotFound(final NotFoundException e) {
         log.error("Объект не найден: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleDataIntegrityViolation(final DataIntegrityViolationException e) {
+        log.error("Ошибка ссылочной целостности в БД (объект не найден): {}", e.getMessage());
+        return new ErrorResponse("Указан несуществующий ID связанного объекта (MPA или жанра).");
     }
 
     @ExceptionHandler(Throwable.class)

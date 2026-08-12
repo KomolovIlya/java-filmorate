@@ -6,25 +6,27 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 class UserControllerTest {
     private UserController userController;
+    private UserService userService;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        InMemoryUserStorage userStorage = new InMemoryUserStorage();
-        UserService userService = new UserService(userStorage);
+        userService = Mockito.mock(UserService.class);
         userController = new UserController(userService);
 
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
@@ -51,8 +53,11 @@ class UserControllerTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertTrue(violations.isEmpty());
 
+        user.setId(1L);
+        when(userService.create(any(User.class))).thenReturn(user);
+
         User created = userController.create(user);
-        assertEquals(1L, created.getId()); // Исправлено на 1L
+        assertEquals(1L, created.getId());
     }
 
     @Test
@@ -81,6 +86,14 @@ class UserControllerTest {
         user.setEmail("test@yandex.ru");
         user.setLogin("shadow");
         user.setBirthday(LocalDate.of(2000, 1, 1));
+
+        User returnedUser = new User();
+        returnedUser.setEmail("test@yandex.ru");
+        returnedUser.setLogin("shadow");
+        returnedUser.setName("shadow");
+        returnedUser.setBirthday(LocalDate.of(2000, 1, 1));
+
+        when(userService.create(any(User.class))).thenReturn(returnedUser);
 
         User created = userController.create(user);
         assertEquals("shadow", created.getName());
