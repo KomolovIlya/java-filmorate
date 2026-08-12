@@ -6,27 +6,28 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 class FilmControllerTest {
     private FilmController filmController;
+    private FilmService filmService;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
-        InMemoryUserStorage userStorage = new InMemoryUserStorage();
-        FilmService filmService = new FilmService(filmStorage, userStorage);
+        filmService = Mockito.mock(FilmService.class);
         filmController = new FilmController(filmService);
 
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
@@ -52,6 +53,10 @@ class FilmControllerTest {
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertTrue(violations.isEmpty());
+
+        film.setId(1L);
+        when(filmService.create(any(Film.class))).thenReturn(film);
+        when(filmService.findAll()).thenReturn(List.of(film));
 
         Film created = filmController.create(film);
         assertEquals(1L, created.getId());
@@ -79,6 +84,8 @@ class FilmControllerTest {
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertTrue(violations.isEmpty());
+
+        when(filmService.create(any(Film.class))).thenReturn(film);
         assertDoesNotThrow(() -> filmController.create(film));
     }
 
@@ -100,6 +107,8 @@ class FilmControllerTest {
         film.setDescription("Фильм про космос");
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         film.setDuration(100);
+
+        when(filmService.create(any(Film.class))).thenThrow(new ValidationException("Дата релиза не может быть раньше..."));
 
         assertThrows(ValidationException.class, () -> filmController.create(film));
     }

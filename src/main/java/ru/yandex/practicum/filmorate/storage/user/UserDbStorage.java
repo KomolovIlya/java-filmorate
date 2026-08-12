@@ -76,16 +76,35 @@ public class UserDbStorage implements UserStorage {
         log.info("Пользователь с id {} удален из БД", id);
     }
 
+    @Override
     public void addFriendToDb(Long userId, Long friendId) {
         String sql = "INSERT INTO friends (user_id, friend_id, is_confirmed) VALUES (?, ?, FALSE)";
         jdbcTemplate.update(sql, userId, friendId);
         log.info("В БД добавлена запись: пользователь {} добавил друга {}", userId, friendId);
     }
 
+    @Override
     public void removeFriendFromDb(Long userId, Long friendId) {
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, userId, friendId);
         log.info("В БД удалена запись: пользователь {} удалил друга {}", userId, friendId);
+    }
+
+    @Override
+    public List<User> getFriends(Long userId) {
+        String sql = "SELECT u.* FROM users u " +
+                "JOIN friends f ON u.id = f.friend_id " +
+                "WHERE f.user_id = ?";
+        return jdbcTemplate.query(sql, this::mapRowToUser, userId);
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long userId, Long otherId) {
+        String sql = "SELECT u.* FROM users u " +
+                "JOIN friends f1 ON u.id = f1.friend_id " +
+                "JOIN friends f2 ON u.id = f2.friend_id " +
+                "WHERE f1.user_id = ? AND f2.user_id = ?";
+        return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {

@@ -49,12 +49,14 @@ class FilmorateApplicationTests {
         User user1 = new User();
         user1.setEmail("user1@yandex.ru");
         user1.setLogin("login1");
+        user1.setName("Name1");
         user1.setBirthday(LocalDate.of(2000, 1, 1));
         userStorage.create(user1);
 
         User user2 = new User();
         user2.setEmail("user2@yandex.ru");
         user2.setLogin("login2");
+        user2.setName("Name2");
         user2.setBirthday(LocalDate.of(2001, 1, 1));
         userStorage.create(user2);
 
@@ -67,11 +69,13 @@ class FilmorateApplicationTests {
         User user = new User();
         user.setEmail("before@yandex.ru");
         user.setLogin("before");
+        user.setName("Before Name");
         user.setBirthday(LocalDate.of(2000, 1, 1));
         User created = userStorage.create(user);
 
         created.setEmail("after@yandex.ru");
         created.setLogin("after");
+        created.setName("After Name");
         userStorage.update(created);
 
         Optional<User> updatedOptional = userStorage.findById(created.getId());
@@ -80,6 +84,7 @@ class FilmorateApplicationTests {
                 .hasValueSatisfying(u -> {
                     assertThat(u).hasFieldOrPropertyWithValue("email", "after@yandex.ru");
                     assertThat(u).hasFieldOrPropertyWithValue("login", "after");
+                    assertThat(u).hasFieldOrPropertyWithValue("name", "After Name");
                 });
     }
 
@@ -88,6 +93,7 @@ class FilmorateApplicationTests {
         User user = new User();
         user.setEmail("delete@yandex.ru");
         user.setLogin("delete");
+        user.setName("Delete Me");
         user.setBirthday(LocalDate.of(2000, 1, 1));
         User created = userStorage.create(user);
 
@@ -102,12 +108,14 @@ class FilmorateApplicationTests {
         User user = new User();
         user.setEmail("user@yandex.ru");
         user.setLogin("user");
+        user.setName("User Name");
         user.setBirthday(LocalDate.of(2000, 1, 1));
         User createdUser = userStorage.create(user);
 
         User friend = new User();
         friend.setEmail("friend@yandex.ru");
         friend.setLogin("friend");
+        friend.setName("Friend Name");
         friend.setBirthday(LocalDate.of(2000, 1, 1));
         User createdFriend = userStorage.create(friend);
 

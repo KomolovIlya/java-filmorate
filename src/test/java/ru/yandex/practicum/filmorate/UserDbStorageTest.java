@@ -49,12 +49,14 @@ class UserDbStorageTest {
         User user1 = new User();
         user1.setEmail("one@yandex.ru");
         user1.setLogin("one");
+        user1.setName("User One");
         user1.setBirthday(LocalDate.of(2000, 1, 1));
         userStorage.create(user1);
 
         User user2 = new User();
         user2.setEmail("two@yandex.ru");
         user2.setLogin("two");
+        user2.setName("User Two");
         user2.setBirthday(LocalDate.of(2000, 1, 1));
         userStorage.create(user2);
 
@@ -68,11 +70,13 @@ class UserDbStorageTest {
         User user = new User();
         user.setEmail("before@yandex.ru");
         user.setLogin("before");
+        user.setName("Before Name");
         user.setBirthday(LocalDate.of(2000, 1, 1));
         User created = userStorage.create(user);
 
         created.setEmail("after@yandex.ru");
         created.setLogin("after");
+        created.setName("After Name");
         userStorage.update(created);
 
         Optional<User> updatedOptional = userStorage.findById(created.getId());
@@ -82,6 +86,7 @@ class UserDbStorageTest {
                 .hasValueSatisfying(u -> {
                     assertThat(u).hasFieldOrPropertyWithValue("email", "after@yandex.ru");
                     assertThat(u).hasFieldOrPropertyWithValue("login", "after");
+                    assertThat(u).hasFieldOrPropertyWithValue("name", "After Name");
                 });
     }
 
@@ -90,6 +95,7 @@ class UserDbStorageTest {
         User user = new User();
         user.setEmail("delete@yandex.ru");
         user.setLogin("delete");
+        user.setName("Delete Name");
         user.setBirthday(LocalDate.of(2000, 1, 1));
         User created = userStorage.create(user);
 

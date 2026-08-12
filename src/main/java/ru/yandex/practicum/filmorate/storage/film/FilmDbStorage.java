@@ -102,6 +102,19 @@ public class FilmDbStorage implements FilmStorage {
         log.info("В БД удалена запись: пользователь {} убрал лайк с фильма {}", userId, filmId);
     }
 
+    @Override
+    public List<Film> getPopular(int count) {
+        String sql = "SELECT f.*, m.name AS mpa_name, COUNT(l.user_id) AS like_count " +
+                "FROM films f " +
+                "LEFT JOIN mpa_ratings m ON f.mpa_id = m.id " +
+                "LEFT JOIN film_likes l ON f.id = l.film_id " +
+                "GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name " +
+                "ORDER BY like_count DESC " +
+                "LIMIT ?";
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm, count);
+    }
+
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = new Film();
         film.setId(rs.getLong("id"));

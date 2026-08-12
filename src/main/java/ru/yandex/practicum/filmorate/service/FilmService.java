@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -47,7 +46,7 @@ public class FilmService {
     }
 
     public void addLike(Long filmId, Long userId) {
-        Film film = findById(filmId);
+        findById(filmId);
         userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
 
@@ -56,7 +55,7 @@ public class FilmService {
     }
 
     public void removeLike(Long filmId, Long userId) {
-        Film film = findById(filmId);
+        findById(filmId);
         userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
 
@@ -65,10 +64,8 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(int count) {
-        return filmStorage.findAll().stream()
-                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+        log.info("Запрошен список из {} самых популярных фильмов на уровне БД", count);
+        return filmStorage.getPopular(count);
     }
 
     private void validate(Film film) {

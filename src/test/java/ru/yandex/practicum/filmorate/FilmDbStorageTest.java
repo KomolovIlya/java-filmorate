@@ -123,6 +123,7 @@ class FilmDbStorageTest {
         User user = new User();
         user.setEmail("liker@yandex.ru");
         user.setLogin("liker");
+        user.setName("Liker Name");
         user.setBirthday(LocalDate.of(2000, 1, 1));
         User createdUser = userStorage.create(user);
 
