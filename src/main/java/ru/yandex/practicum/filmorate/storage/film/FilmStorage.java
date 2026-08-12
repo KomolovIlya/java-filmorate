@@ -15,4 +15,8 @@ public interface FilmStorage {
     List<Film> findAll();
 
     Optional<Film> findById(Long id);
+
+    void addLikeToDb(Long filmId, Long userId);
+
+    void removeLikeFromDb(Long filmId, Long userId);
 }
