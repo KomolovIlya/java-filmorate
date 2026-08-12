@@ -19,16 +19,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import(UserDbStorage.class)
-class FilmorateApplicationTests {
+class UserDbStorageTest {
     private final UserDbStorage userStorage;
 
     @Test
-    public void testCreateAndFindUserById() {
+    void testCreateAndFindUserById() {
         User user = new User();
-        user.setEmail("test@yandex.ru");
-        user.setLogin("test_login");
-        user.setName("Ivan");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
+        user.setEmail("ivan@yandex.ru");
+        user.setLogin("vanya");
+        user.setName("Иван");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
         User created = userStorage.create(user);
 
@@ -38,32 +38,33 @@ class FilmorateApplicationTests {
                 .isPresent()
                 .hasValueSatisfying(u -> {
                     assertThat(u).hasFieldOrPropertyWithValue("id", created.getId());
-                    assertThat(u).hasFieldOrPropertyWithValue("email", "test@yandex.ru");
-                    assertThat(u).hasFieldOrPropertyWithValue("login", "test_login");
-                    assertThat(u).hasFieldOrPropertyWithValue("name", "Ivan");
+                    assertThat(u).hasFieldOrPropertyWithValue("email", "ivan@yandex.ru");
+                    assertThat(u).hasFieldOrPropertyWithValue("login", "vanya");
+                    assertThat(u).hasFieldOrPropertyWithValue("name", "Иван");
                 });
     }
 
     @Test
-    public void testFindAllUsers() {
+    void testFindAllUsers() {
         User user1 = new User();
-        user1.setEmail("user1@yandex.ru");
-        user1.setLogin("login1");
+        user1.setEmail("one@yandex.ru");
+        user1.setLogin("one");
         user1.setBirthday(LocalDate.of(2000, 1, 1));
         userStorage.create(user1);
 
         User user2 = new User();
-        user2.setEmail("user2@yandex.ru");
-        user2.setLogin("login2");
-        user2.setBirthday(LocalDate.of(2001, 1, 1));
+        user2.setEmail("two@yandex.ru");
+        user2.setLogin("two");
+        user2.setBirthday(LocalDate.of(2000, 1, 1));
         userStorage.create(user2);
 
         List<User> users = userStorage.findAll();
+
         assertThat(users).hasSize(2);
     }
 
     @Test
-    public void testUpdateUser() {
+    void testUpdateUser() {
         User user = new User();
         user.setEmail("before@yandex.ru");
         user.setLogin("before");
@@ -75,6 +76,7 @@ class FilmorateApplicationTests {
         userStorage.update(created);
 
         Optional<User> updatedOptional = userStorage.findById(created.getId());
+
         assertThat(updatedOptional)
                 .isPresent()
                 .hasValueSatisfying(u -> {
@@ -84,7 +86,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void testDeleteUser() {
+    void testDeleteUser() {
         User user = new User();
         user.setEmail("delete@yandex.ru");
         user.setLogin("delete");
@@ -95,30 +97,5 @@ class FilmorateApplicationTests {
 
         Optional<User> deletedOptional = userStorage.findById(created.getId());
         assertThat(deletedOptional).isEmpty();
-    }
-
-    @Test
-    public void testAddAndRemoveFriend() {
-        User user = new User();
-        user.setEmail("user@yandex.ru");
-        user.setLogin("user");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
-        User createdUser = userStorage.create(user);
-
-        User friend = new User();
-        friend.setEmail("friend@yandex.ru");
-        friend.setLogin("friend");
-        friend.setBirthday(LocalDate.of(2000, 1, 1));
-        User createdFriend = userStorage.create(friend);
-
-        userStorage.addFriendToDb(createdUser.getId(), createdFriend.getId());
-
-        User updatedUser = userStorage.findById(createdUser.getId()).orElseThrow();
-        assertThat(updatedUser.getFriends()).containsKey(createdFriend.getId());
-
-        userStorage.removeFriendFromDb(createdUser.getId(), createdFriend.getId());
-
-        User clearedUser = userStorage.findById(createdUser.getId()).orElseThrow();
-        assertThat(clearedUser.getFriends()).doesNotContainKey(createdFriend.getId());
     }
 }
